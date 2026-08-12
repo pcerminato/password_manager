@@ -1,8 +1,10 @@
 export class Password {
-  constructor(
-    private readonly _value: string,
-    private _encrypted: string,
-  ) {}
+  private readonly _value: string;
+  private _encrypted: string;
+  constructor(_value: string, _encrypted: string) {
+    this._value = _value;
+    this._encrypted = _encrypted;
+  }
   public get value(): string {
     return this._value;
   }
