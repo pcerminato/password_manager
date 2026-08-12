@@ -1,0 +1,21 @@
+{
+  "name": "password_manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "prompt-sync": "^4.2.0",
+    "vitest": "^4.1.10"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/prompt-sync": "^4.2.3"
+  }
+}
