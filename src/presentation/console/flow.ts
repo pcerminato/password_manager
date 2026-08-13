@@ -5,7 +5,10 @@ import {
   EncryptionService,
   PasswordStorageService,
 } from "../../infrastructure/index.ts";
-import { SaveMasterPasswordUseCase } from "../../application/use-cases/index.ts";
+import {
+  SaveMasterPasswordUseCase,
+  SaveNewPasswordUseCase,
+} from "../../application/use-cases/index.ts";
 import { Password } from "../../domain/password.ts";
 
 const storageService = new PasswordStorageService();
@@ -29,8 +32,8 @@ function showMenu() {
   let menu = `Enter the number of an option from the list. \n`;
 
   menu += master && "  1. List all passwords. \n";
-  menu += "  2. Set a new master password. \n";
-  menu += master && "  3. Verify the master password. \n";
+  menu += master && "  2. Store a new password. \n";
+  menu += "  3. Set a new master password. \n";
   menu += "  4. Exit.";
 
   console.log(menu);
@@ -41,14 +44,16 @@ function showMenu() {
     viewPasswordsList();
     return;
   }
-  if (input === "2") {
+  if (master && input === "2") {
+    promptAddPassword();
+    /* promptVerifyMasterPassword(); */
+    return;
+  }
+  if (input === "3") {
     promptSetMasterPassword();
     return;
   }
-  if (master && input === "3") {
-    promptVerifyMasterPassword();
-    return;
-  }
+
   if (input === "4") {
     process.exit();
   }
@@ -79,6 +84,21 @@ async function saveMasterPassword(password: string) {
     showMenu();
   }
 }
+
+async function savePassword(name: string, password: string) {
+  try {
+    const useCase = new SaveNewPasswordUseCase(storageService);
+    await useCase.execute(name, password);
+    logToConsole("✅ Password has been saved.");
+  } catch (error) {
+    if (error instanceof Error) {
+      logToConsole(`⛔️ ${error.message}`);
+    }
+  } finally {
+    showMenu();
+  }
+}
+
 /* @alias compareHashedPassword */
 async function compareMasterPassword(password: string) {
   const master = storageService.getMaster();
@@ -92,6 +112,22 @@ async function compareMasterPassword(password: string) {
 async function promptSetMasterPassword() {
   const response = prompt("Set the master password (8 chars min): ");
   await saveMasterPassword(response);
+}
+
+async function promptAddPassword() {
+  logToConsole("Save a new password");
+
+  const name = prompt("Enter an identifier name: ");
+  const password = prompt("Enter the password: ");
+
+  if (!name.trim() || !password.trim()) {
+    logToConsole(
+      "⚠️  Cannot save the password. Either the name or the password are missing.",
+    );
+    showMenu();
+  } else {
+    await savePassword(name, password);
+  }
 }
 
 /* @alias promptOldPassword */
