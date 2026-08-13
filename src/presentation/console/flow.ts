@@ -1,5 +1,6 @@
 import promptModule from "prompt-sync";
 
+import { logToConsole } from "./utils.ts";
 import {
   EncryptionService,
   PasswordStorageService,
@@ -9,43 +10,55 @@ import { Password } from "../../domain/password.ts";
 
 const storageService = new PasswordStorageService();
 const encryptionService = new EncryptionService();
-
-import { logToConsole } from "./utils.ts";
-
 const prompt = promptModule();
 
-export const start = showMenu;
+export async function start() {
+  const master = storageService.getMaster();
 
-function showMenu() {
-  console.log(`Enter the number of an option from the list.
-    1. View passwords
-    2. Manage new password
-    3. Verify password
-    4. Exit
-  `);
+  console.log("Hi there 👋");
 
-  const input = prompt("Option: ");
-
-  switch (input) {
-    case "1":
-      viewPasswords();
-      break;
-    case "2":
-      promptSaveMasterPassword();
-      break;
-    case "3":
-      promptOldMasterPassword();
-      break;
-    case "4":
-      process.exit();
-    default:
-      console.clear();
-      logToConsole(`😮 "${input}" is not a valid option.`);
-      showMenu();
+  if (!master) {
+    await promptSetMasterPassword();
+  } else {
+    await promptVerifyMasterPassword();
   }
 }
 
-function viewPasswords() {
+function showMenu() {
+  const master = storageService.getMaster();
+  let menu = `Enter the number of an option from the list. \n`;
+
+  menu += master && "  1. List all passwords. \n";
+  menu += "  2. Set a new master password. \n";
+  menu += master && "  3. Verify the master password. \n";
+  menu += "  4. Exit.";
+
+  console.log(menu);
+
+  const input = prompt("Option: ");
+
+  if (master && input === "1") {
+    viewPasswordsList();
+    return;
+  }
+  if (input === "2") {
+    promptSetMasterPassword();
+    return;
+  }
+  if (master && input === "3") {
+    promptVerifyMasterPassword();
+    return;
+  }
+  if (input === "4") {
+    process.exit();
+  }
+
+  console.clear();
+  logToConsole(`😮 "${input}" is not a valid option.`);
+  showMenu();
+}
+
+function viewPasswordsList() {
   console.log("wip");
 }
 
@@ -76,27 +89,21 @@ async function compareMasterPassword(password: string) {
   return false;
 }
 
-function promptSaveMasterPassword() {
-  const response = prompt("Enter the master password (8 chars min): ");
-  saveMasterPassword(response);
+async function promptSetMasterPassword() {
+  const response = prompt("Set the master password (8 chars min): ");
+  await saveMasterPassword(response);
 }
 
 /* @alias promptOldPassword */
 /* Compares the master password to the one entered in the prompt */
-async function promptOldMasterPassword() {
-  let verified = false;
+async function promptVerifyMasterPassword() {
+  const response = prompt("Enter the master password: ");
+  const ok = await compareMasterPassword(response);
 
-  console.clear();
-
-  while (!verified) {
-    const response = prompt("Enter the master password: ");
-    const ok = await compareMasterPassword(response);
-    if (ok) {
-      verified = true;
-      logToConsole("😎 The password was correctly verified.");
-      showMenu();
-    } else {
-      logToConsole("🤔 Wrong password. Try again.");
-    }
+  if (ok) {
+    logToConsole("😎 The password was correctly verified.");
+  } else {
+    logToConsole("🤔 Wrong password. Try again.");
   }
+  showMenu();
 }
