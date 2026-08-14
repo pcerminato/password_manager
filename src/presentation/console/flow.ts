@@ -16,7 +16,7 @@ const encryptionService = new EncryptionService();
 const prompt = promptModule();
 
 export async function start() {
-  const master = storageService.getMaster();
+  const master = await storageService.getMaster();
 
   console.log("Hi there 👋");
 
@@ -27,8 +27,8 @@ export async function start() {
   }
 }
 
-function showMenu() {
-  const master = storageService.getMaster();
+async function showMenu() {
+  const master = await storageService.getMaster();
   let menu = `Enter the number of an option from the list. \n`;
 
   menu += master && "  1. List all passwords. \n";
@@ -42,32 +42,28 @@ function showMenu() {
 
   if (master && input === "1") {
     viewPasswordsList();
-    return;
-  }
-  if (master && input === "2") {
+  } else if (master && input === "2") {
     promptAddPassword();
-    /* promptVerifyMasterPassword(); */
     return;
-  }
-  if (input === "3") {
+  } else if (input === "3") {
     promptSetMasterPassword();
     return;
-  }
-
-  if (input === "4") {
+  } else if (input === "4") {
     process.exit();
+  } else {
+    console.clear();
+    logToConsole(`😮 "${input}" is not a valid option.`);
   }
 
-  console.clear();
-  logToConsole(`😮 "${input}" is not a valid option.`);
   showMenu();
 }
 
-function viewPasswordsList() {
-  console.log("wip");
+async function viewPasswordsList() {
+  logToConsole(`All password list.`);
+  const passwordsList = await storageService.findAll();
+  console.table(passwordsList);
 }
 
-/* @alias saveNewPassword() */
 async function saveMasterPassword(password: string) {
   try {
     const useCase = new SaveMasterPasswordUseCase(
@@ -75,7 +71,7 @@ async function saveMasterPassword(password: string) {
       encryptionService,
     );
     await useCase.execute(Password.create(password));
-    logToConsole("✅ Password has been saved.");
+    logToConsole("✅ The new master password has been set.");
   } catch (error) {
     if (error instanceof Error) {
       logToConsole(`⛔️ ${error.message}`);
@@ -99,9 +95,8 @@ async function savePassword(name: string, password: string) {
   }
 }
 
-/* @alias compareHashedPassword */
 async function compareMasterPassword(password: string) {
-  const master = storageService.getMaster();
+  const master = await storageService.getMaster();
   if (master !== null) {
     return await encryptionService.compare(password, master);
   }
@@ -110,7 +105,8 @@ async function compareMasterPassword(password: string) {
 }
 
 async function promptSetMasterPassword() {
-  const response = prompt("Set the master password (8 chars min): ");
+  logToConsole("🔐 Set a new master password (8 chars min): ");
+  const response = prompt("> ");
   await saveMasterPassword(response);
 }
 
@@ -130,7 +126,6 @@ async function promptAddPassword() {
   }
 }
 
-/* @alias promptOldPassword */
 /* Compares the master password to the one entered in the prompt */
 async function promptVerifyMasterPassword() {
   const response = prompt("Enter the master password: ");

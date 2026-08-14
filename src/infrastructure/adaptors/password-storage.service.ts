@@ -21,7 +21,12 @@ export class PasswordStorageService implements IPasswordStorage {
     }
     this.store.passwords.set(name, password);
   }
-  getMaster() {
-    return this.store.hash;
+  async getMaster() {
+    return Promise.resolve(this.store.hash);
+  }
+  async findAll() {
+    return Promise.resolve(
+      Array.from(this.store.passwords.entries()).map((v) => v),
+    );
   }
 }
