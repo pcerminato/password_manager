@@ -12,6 +12,7 @@ describe("Use Case > Save New Password", () => {
     mockPasswordStorage = {
       save: vi.fn(),
       saveMaster: vi.fn(),
+      findAll: vi.fn(),
     };
     mockEncryption = {
       compare: vi.fn(),
@@ -23,10 +24,12 @@ describe("Use Case > Save New Password", () => {
     );
   });
   test("Should save a valid master password", async () => {
+    const userName = "master-user-name";
     const password = Password.create("abcd1234");
-    await useCase.execute(password);
+    await useCase.execute(userName, password);
 
     expect(mockPasswordStorage.saveMaster).toHaveBeenCalledExactlyOnceWith(
+      userName,
       password,
     );
     expect(mockEncryption.hashSync).toHaveBeenCalledExactlyOnceWith(
@@ -34,9 +37,10 @@ describe("Use Case > Save New Password", () => {
     );
   });
   test("Should throw an error for an invalid master password", async () => {
+    const userName = "master-user-name";
     const password = Password.create(""); // short password
 
-    await expect(useCase.execute(password)).rejects.toThrow(
+    await expect(useCase.execute(userName, password)).rejects.toThrow(
       "The password must have at least 8 characters.",
     );
     expect(mockPasswordStorage.saveMaster).not.toHaveBeenCalled();

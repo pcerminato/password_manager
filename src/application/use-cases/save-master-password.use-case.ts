@@ -8,9 +8,9 @@ export class SaveMasterPasswordUseCase {
     this.storage = storage;
     this.encryptionService = encryptionService;
   }
-  async execute(password: Password) {
+  async execute(userName: string, password: Password) {
     password.validate();
     password.encrypted = this.encryptionService.hashSync(password.value);
-    await this.storage.saveMaster(password);
+    await this.storage.saveMaster(userName, password);
   }
 }

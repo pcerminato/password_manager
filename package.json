@@ -5,13 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev:console": "node --watch src/presentation/console/index.ts",
+    "dev:console": "node --env-file=.env --watch src/presentation/console/index.ts",
     "test": "vitest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "mongodb": "^7.5.0",
     "prompt-sync": "^4.2.0",
     "vitest": "^4.1.10"
   },
