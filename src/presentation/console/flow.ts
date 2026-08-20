@@ -11,17 +11,55 @@ import {
 } from "../../application/use-cases/index.ts";
 import { Password } from "../../domain/password.ts";
 
-const encryptionService = new EncryptionService();
 const prompt = promptModule();
+
+export async function promptLogin(
+  validateMasterPassword: (
+    userName: string,
+    password: string,
+  ) => Promise<boolean>,
+): Promise<string | undefined> {
+  let verified = false;
+  let validUserName;
+
+  logToConsole(`Hi there 👋
+🔐 Enter your user name and the master password.`);
+
+  while (!verified) {
+    const userName = prompt("User name: ");
+    const password = prompt("Password: ");
+
+    if (userName === null || password === null) {
+      logToConsole(
+        "❌ The user name and the master password must be filled in.",
+      );
+      continue;
+    }
+
+    const ok = await validateMasterPassword(userName, password); //TODO: this is a use case
+
+    if (ok) {
+      logToConsole("😎 The password was correctly verified.");
+      verified = true;
+      validUserName = userName;
+    } else {
+      logToConsole("🤔 Wrong password. Try again.");
+    }
+  }
+  //await showMenu();
+  return Promise.resolve(validUserName);
+}
 
 export async function start({
   storageService,
+  encryptionService,
 }: {
   storageService: PasswordStorageService;
+  encryptionService: EncryptionService;
 }) {
   console.log("Hi there 👋");
 
-  await promptLogin();
+  await showMenu();
 
   async function showMenu() {
     console.log(`Enter the number of an option from the list.
@@ -84,14 +122,6 @@ export async function start({
     }
   }
 
-  async function compareMasterPassword(userName: string, password: string) {
-    const authHash = await storageService.getAuthHash(userName);
-    if (authHash !== null) {
-      return await encryptionService.compare(password, authHash);
-    }
-    return false;
-  }
-
   async function promptSetMasterPassword() {
     logToConsole("🔐 Set a user name and a new master password.");
     const userName = prompt("User name (cannot be empty): ");
@@ -118,25 +148,5 @@ export async function start({
         }
       }
     }
-  }
-
-  /* Compares the master password to the one entered in the prompt */
-  async function promptLogin() {
-    let verified = false;
-    logToConsole("🔐 Enter your user name and the master password.");
-
-    while (!verified) {
-      const userName = prompt("User name: ");
-      const password = prompt("Password: ");
-      const ok = await compareMasterPassword(userName, password);
-
-      if (ok) {
-        logToConsole("😎 The password was correctly verified.");
-        verified = true;
-      } else {
-        logToConsole("🤔 Wrong password. Try again.");
-      }
-    }
-    await showMenu();
   }
 }

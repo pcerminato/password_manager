@@ -4,8 +4,8 @@ const MONGODB_URI = process.env.MONGODB_URI!;
 const DB_NAME = process.env.DB_NAME!;
 const client = new MongoClient(MONGODB_URI);
 
-type Auth = { name: string; hash: string };
-type Passwords = {
+export type Auth = { name: string; hash: string };
+export type Passwords = {
   resource: string;
   password: string;
 };
