@@ -1,7 +1,6 @@
 import { vi, describe, test, beforeEach, type Mocked, expect } from "vitest";
 import { SaveNewPasswordUseCase } from "./save-new-password.use-case";
-import { IPasswordStorage, IEncryption } from "../ports";
-import { Password } from "../../domain/password";
+import { IPasswordStorage } from "../ports";
 
 describe("Use Case > Save New Password", () => {
   let useCase: SaveNewPasswordUseCase;
@@ -11,6 +10,7 @@ describe("Use Case > Save New Password", () => {
     mockPasswordStorage = {
       save: vi.fn(),
       saveMaster: vi.fn(),
+      findAll: vi.fn(),
     };
     useCase = new SaveNewPasswordUseCase(mockPasswordStorage);
   });
