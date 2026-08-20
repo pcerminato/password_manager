@@ -50,19 +50,6 @@ export class PasswordStorageService implements IPasswordStorage {
       throw new Error("Could not save the password.");
     }
   }
-  /* Returns the encrypted master password by userName */
-  async getAuthHash(userName: string) {
-    try {
-      const auth = await this.db.auth.findOne({ name: userName });
-      if (auth) {
-        return auth.hash;
-      }
-      return null;
-    } catch (_) {
-      // todo: telemetry error log.
-      throw new Error("Could not get the master password.");
-    }
-  }
   async findAll() {
     if (this.cache.passwords.size === 0) {
       await this.cacheRevalidation();
