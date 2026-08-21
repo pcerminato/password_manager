@@ -1,7 +1,8 @@
 import { Password } from "../../domain/password.ts";
+import { Resource } from "../../domain/resource.ts";
 
 export interface IPasswordStorage {
   save: (name: string, password: string) => Promise<void>;
   saveMaster: (userName: string, password: Password) => Promise<void>;
-  findAll: () => Promise<[string, string][]>;
+  findAll: () => Promise<Resource[]>;
 }

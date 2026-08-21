@@ -92,7 +92,8 @@ export async function start({
   async function viewPasswordsList() {
     logToConsole("📋 Passwords List");
     const passwordsList = await storageService.findAll();
-    console.table(passwordsList);
+    const tabularPswList = passwordsList.map((v) => [v.name, v.password.value]);
+    console.table(tabularPswList);
   }
 
   async function saveMasterPassword(userName: string, password: string) {

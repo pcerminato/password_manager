@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll } from "vitest";
-import { db } from "../../../tests/db-setup.ts";
-import { PASSWORDS } from "../../../tests/db-seed.ts";
 import { PasswordStorageService } from "./password-storage.service.ts";
 import type { Auth, Passwords } from "../database.ts";
+import { db } from "../../../tests/db-setup.ts";
+import { PASSWORDS } from "../../../tests/db-seed.ts";
 
 describe("Service > Password Storage", () => {
   let auth: any;
@@ -21,18 +21,16 @@ describe("Service > Password Storage", () => {
 
       const expectedValues = PASSWORDS.filter(
         (psw) => psw.userName === userName,
-      )
-        .map((psw) => [psw.resource, psw.password])
-        .sort();
+      ).sort((prev, curr) => prev.resource.localeCompare(curr.resource));
 
       expect(expectedValues.length).toEqual(results.length);
 
-      results.sort().forEach((value, i) => {
-        // compare resource
-        expect(value[0]).toEqual(expectedValues[i][0]);
-        // campares password
-        expect(value[1]).toEqual(expectedValues[i][1]);
-      });
+      results
+        .sort((prev, curr) => prev.name.localeCompare(curr.name))
+        .forEach((_, i) => {
+          expect(results[i].name).toEqual(expectedValues[i].resource);
+          expect(results[i].password.value).toEqual(expectedValues[i].password);
+        });
     });
   });
 });

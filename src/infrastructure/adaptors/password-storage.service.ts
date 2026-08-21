@@ -1,5 +1,6 @@
 import type { IPasswordStorage } from "../../application/ports/index.ts";
 import { Password } from "../../domain/password.ts";
+import { Resource } from "../../domain/resource.ts";
 import type { Collections } from "../database.ts";
 
 /* 
@@ -32,7 +33,6 @@ export class PasswordStorageService implements IPasswordStorage {
         hash: password.encrypted,
       });
     } catch (_) {
-      // todo: telemetry error log.
       throw new Error("Could not save the master password.");
     }
   }
@@ -52,7 +52,6 @@ export class PasswordStorageService implements IPasswordStorage {
       });
       this.cache.passwords.set(resource, password);
     } catch (_) {
-      // todo: telemetry error log.
       throw new Error("Could not save the password.");
     }
   }
@@ -60,7 +59,10 @@ export class PasswordStorageService implements IPasswordStorage {
     if (this.cache.passwords.size === 0) {
       await this.cacheRevalidation();
     }
-    return Array.from(this.cache.passwords.entries()).map((v) => v);
+    //return Array.from(this.cache.passwords.entries()).map((v) => v);
+    return Array.from(this.cache.passwords.entries()).map(
+      ([resource, password]) => new Resource(resource, password, this.userName),
+    );
   }
   private async cacheRevalidation() {
     try {
@@ -73,7 +75,6 @@ export class PasswordStorageService implements IPasswordStorage {
       ]);
       this.cache.passwords = new Map(result);
     } catch (_) {
-      // todo: telemetry error log.
       throw new Error("Could retrieve the data.");
     }
   }
