@@ -8,6 +8,7 @@ export type Auth = { name: string; hash: string };
 export type Passwords = {
   resource: string;
   password: string;
+  userName: string;
 };
 export type Collections = {
   auth: Collection<Auth>;

@@ -36,7 +36,7 @@ export async function promptLogin(
       continue;
     }
 
-    const ok = await validateMasterPassword(userName, password); //TODO: this is a use case
+    const ok = await validateMasterPassword(userName, password);
 
     if (ok) {
       logToConsole("😎 The password was correctly verified.");

@@ -19,9 +19,11 @@ type Cache = {
 export class PasswordStorageService implements IPasswordStorage {
   private readonly cache: Cache;
   private readonly db: Collections;
-  constructor({ auth, passwords }: Collections) {
+  private readonly userName: string;
+  constructor({ auth, passwords }: Collections, userName: string) {
     this.cache = { passwords: new Map() };
     this.db = { auth, passwords };
+    this.userName = userName;
   }
   async saveMaster(userName: string, password: Password) {
     try {
@@ -34,17 +36,21 @@ export class PasswordStorageService implements IPasswordStorage {
       throw new Error("Could not save the master password.");
     }
   }
-  async save(name: string, password: string) {
+  async save(resource: string, password: string) {
     if (this.cache.passwords.size === 0) {
       await this.cacheRevalidation();
     }
-    if (this.cache.passwords.has(name)) {
-      throw new Error(`There already is a password named "${name}".`);
+    if (this.cache.passwords.has(resource)) {
+      throw new Error(`There already is a password named "${resource}".`);
     }
 
     try {
-      await this.db.passwords.insertOne({ resource: name, password });
-      this.cache.passwords.set(name, password);
+      await this.db.passwords.insertOne({
+        resource,
+        password,
+        userName: this.userName,
+      });
+      this.cache.passwords.set(resource, password);
     } catch (_) {
       // todo: telemetry error log.
       throw new Error("Could not save the password.");
@@ -58,7 +64,9 @@ export class PasswordStorageService implements IPasswordStorage {
   }
   private async cacheRevalidation() {
     try {
-      const data = await this.db.passwords.find({}).toArray();
+      const data = await this.db.passwords
+        .find({ userName: this.userName })
+        .toArray();
       const result = data.map<[string, string]>(({ resource, password }) => [
         resource,
         password,

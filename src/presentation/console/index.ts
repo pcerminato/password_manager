@@ -13,9 +13,7 @@ import { masterPasswordValidator } from "./utils.ts";
     const userName = await promptLogin(
       masterPasswordValidator(collections.auth, encryptionService),
     );
-    const storageService = new PasswordStorageService(
-      collections /* , userName */,
-    );
+    const storageService = new PasswordStorageService(collections, userName!);
 
     start({
       storageService,
