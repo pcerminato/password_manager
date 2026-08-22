@@ -4,14 +4,10 @@ import { Resource } from "../../domain/resource.ts";
 import type { Collections } from "../database.ts";
 
 /* 
-The data is alway read cache-first.
-- cacheRevalidation() gets fresh data from the db and fills the cache up.
-- findAll(): reads from cache. If the cache is empty (ex. at startup) it revalidates it.
-- when a new password is saved with save() it updates both the db and the revalidates the cache.
-  - the downside is that there is no single source of truth for data (there is data duplication: cache and db).
-  Also there is more a cognitive load because you need to bare in mind that you have to maintain 
-  consistency for both the cache and the db. 
-  Those trade-off are for the sake of performance though (fewer read roundtrips to the db).
+The approach is of that data is read from the db only at startup and always from cache after that.
+- cacheRevalidation() gets fresh data from the db and fills up the cache (in memory Map).
+- findAll(): reads from cache. If the cache is empty, it revalidates it. This case happens only at startup.
+- save(): when a new password is saved it updates both the db and the cache.
 */
 type Cache = {
   passwords: Map<string, string>;
@@ -59,7 +55,6 @@ export class PasswordStorageService implements IPasswordStorage {
     if (this.cache.passwords.size === 0) {
       await this.cacheRevalidation();
     }
-    //return Array.from(this.cache.passwords.entries()).map((v) => v);
     return Array.from(this.cache.passwords.entries()).map(
       ([resource, password]) => new Resource(resource, password, this.userName),
     );
